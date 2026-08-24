@@ -50,14 +50,24 @@ pkgs.stdenv.mkDerivation rec {
 
     mkdir -p $out/bin
 
-    ln -s $out/incy/bin/incy $out/bin/incy
+    # Keep the real jpackage launcher, then wrap it to set AWT env.
+    mv $out/incy/bin/incy $out/incy/bin/incy-bin
 
-    # Force Skiko software rendering: OpenGL default renders black on
-    # XWayland + NVIDIA. Insert into the jpackage [JavaOptions] section.
-    substituteInPlace \
-      $out/incy/lib/app/incy.cfg \
+    # Skiko renderer + HiDPI page: XWayland fractional scale makes the
+    # surface 2x the window (half-black). Force software + integer scale.
+    substituteInPlace $out/incy/lib/app/incy.cfg \
       --replace-fail "java-options=-Dskiko.library.path=\$APPDIR" "java-options=-Dskiko.library.path=\$APPDIR
-java-options=-Dskiko.renderApi=SOFTWARE_COMPAT"
+java-options=-Dskiko.renderApi=SOFTWARE_COMPAT
+java-options=-Dsun.java2d.uiScale=1
+java-options=-Dsun.java2d.uiScale.enabled=false"
+
+    cat > $out/bin/incy <<EOF
+#!/bin/sh
+# Reparenting fix for Java/AWT windows under xwayland-satellite (niri).
+export _JAVA_AWT_WM_NONREPARENTING=1
+exec $out/incy/bin/incy-bin "\$@"
+EOF
+    chmod +x $out/bin/incy
 
     substituteInPlace \
       $out/share/applications/incy.desktop \
