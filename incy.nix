@@ -10,11 +10,22 @@ pkgs.stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = with pkgs; [
+    autoPatchelfHook
     stdenv.cc.cc
     zstd
   ];
 
   buildInputs = with pkgs; [
+    libX11
+    libXrender
+    libXtst
+    libXi
+    libXext
+    libxcb
+    zlib
+    alsa-lib
+    libGL
+    fontconfig
   ];
 
   dontUnpack = true;
