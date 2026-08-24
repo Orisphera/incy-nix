@@ -50,7 +50,15 @@ pkgs.stdenv.mkDerivation rec {
 
     mkdir -p $out/bin
 
-    ln -s $out/incy/bin/incy $out/bin/incy
+    # AWT reads the reparenting hint via native getenv(). On non-reparenting
+    # WMs over XWayland (niri), the WM's ConfigureNotify resize is dropped at
+    # map-time, so Compose renders at a fixed initial size leaving black margin.
+    cat > $out/bin/incy <<EOF
+#!/bin/sh
+export _JAVA_AWT_WM_NONREPARENTING=1
+exec $out/incy/bin/incy "\$@"
+EOF
+    chmod +x $out/bin/incy
 
     substituteInPlace \
       $out/share/applications/incy.desktop \
