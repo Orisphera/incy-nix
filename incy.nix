@@ -50,8 +50,8 @@ pkgs.stdenv.mkDerivation rec {
 
     mkdir -p $out/bin
 
-    # Keep the real jpackage launcher, then wrap it to set AWT env.
-    mv $out/incy/bin/incy $out/incy/bin/incy-bin
+    # jpackage launcher loads incy.cfg by the launcher's basename; keep the
+    # name intact so the config (renderer + scale flags) is applied.
 
     # Skiko renderer + HiDPI page: XWayland fractional scale makes the
     # surface 2x the window (half-black). Force software + integer scale.
@@ -65,7 +65,7 @@ java-options=-Dsun.java2d.uiScale.enabled=false"
 #!/bin/sh
 # Reparenting fix for Java/AWT windows under xwayland-satellite (niri).
 export _JAVA_AWT_WM_NONREPARENTING=1
-exec $out/incy/bin/incy-bin "\$@"
+exec $out/incy/bin/incy "\$@"
 EOF
     chmod +x $out/bin/incy
 
