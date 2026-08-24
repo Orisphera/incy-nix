@@ -52,6 +52,13 @@ pkgs.stdenv.mkDerivation rec {
 
     ln -s $out/incy/bin/incy $out/bin/incy
 
+    # Force Skiko software rendering: OpenGL default renders black on
+    # XWayland + NVIDIA. Insert into the jpackage [JavaOptions] section.
+    substituteInPlace \
+      $out/incy/lib/app/incy.cfg \
+      --replace-fail "java-options=-Dskiko.library.path=\$APPDIR" "java-options=-Dskiko.library.path=\$APPDIR
+java-options=-Dskiko.renderApi=SOFTWARE_COMPAT"
+
     substituteInPlace \
       $out/share/applications/incy.desktop \
       --replace-fail "/opt/incy/bin/incy" "$out/bin/incy"
