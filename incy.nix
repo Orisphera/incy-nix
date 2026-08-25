@@ -61,23 +61,17 @@ pkgs.stdenv.mkDerivation rec {
     #   * SKIKO_RENDER_API=SOFTWARE — force Skiko's CPU renderer instead of the
     #     broken GLX/OpenGL path under XWayland.
     #
-    # The real binary is jpackage's launcher at $out/incy/bin/incy, which
-    # derives its app config filename from its own executable name (i.e. an
-    # executable "incy.jpackage" expects "incy.jpackage.cfg"). incy rewrites
-    # its own desktop entry at launch to point at its raw binary path
-    # ($out/incy/bin/incy), so we wrap that path (and $out/bin/incy) so the
-    # rendering env always applies no matter which path is used.
-    mv $out/incy/bin/incy $out/incy/bin/incy.jpackage
-    cp $out/incy/lib/app/incy.cfg $out/incy/lib/app/incy.jpackage.cfg
-    for target in "$out/incy/bin/incy" "$out/bin/incy"; do
-        cat > "$target" <<EOF
+    # incy rewrites its own desktop entry at launch to point at the running
+    # binary (via /proc/self/exe), so the shipped + system desktop entries point
+    # at this wrapper PATH ($out/bin/incy). Launchers (vicinae) resolve the
+    # desktop entry and run the wrapper, which carries the env into the JVM.
+    cat > $out/bin/incy <<EOF
 #!/bin/sh
 export _JAVA_AWT_WM_NONREPARENTING=1
 export SKIKO_RENDER_API=SOFTWARE
-exec "$out/incy/bin/incy.jpackage" "\$@"
+exec "$out/incy/bin/incy" "\$@"
 EOF
-        chmod +x "$target"
-    done
+    chmod +x $out/bin/incy
 
     substituteInPlace \
       $out/share/applications/incy.desktop \
