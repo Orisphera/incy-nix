@@ -33,7 +33,7 @@ in
       # NixOS polkit provides the setuid pkexec wrapper at /run/wrappers/bin/pkexec,
       # which the INCY GUI probes for.
       security.polkit.enable = true;
-      security.polkit.enablePkexecWrapper = true;
+      # security.polkit.enablePkexecWrapper = true;
       security.polkit.adminIdentities = [ "unix-group:wheel" ];
 
       # The polkit policy (action cc.incy.vpn.run-helper) shipped in the package.
